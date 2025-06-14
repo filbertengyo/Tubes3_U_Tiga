@@ -244,3 +244,29 @@ QScrollBar::sub-line:horizontal {
 QScrollBar::add-page, QScrollBar::sub-page {
     background: none;
 }
+
+#SummaryScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+#IdentityFrame, #InfoEntryFrame {
+    border-radius: 6px;
+}
+
+#SummaryName {
+    color: #1a202c;
+}
+
+#SubtitleLabel {
+    color: #495057;
+}
+
+#SkillTag {
+    background-color: #7A82AB;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10pt;
+}
