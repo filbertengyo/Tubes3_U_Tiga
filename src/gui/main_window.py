@@ -1,33 +1,28 @@
-class MainWindow:
+from PyQt6.QtWidgets import QMainWindow, QStackedWidget
+from .search_page import SearchPage
+from .summary_page import SummaryPage
+
+class MainWindow(QMainWindow):
     def __init__(self):
-        """
-        Inisialisasi jendela utama dan seluruh halaman (search & summary).
-        """
-        pass
+        super().__init__()
+        self.setWindowTitle("CV Analyzer App")
+        self.setGeometry(100, 100, 900, 700)
 
-    def setup_ui(self):
-        """
-        Menyiapkan struktur UI utama dan menambahkan komponen dasar.
-        """
-        pass
+        self.stacked_widget = QStackedWidget()
+        self.setCentralWidget(self.stacked_widget)
 
-    def switch_to_search(self):
-        """
-        Berpindah ke halaman pencarian.
-        """
-        pass
+        self.search_page = SearchPage(self)
+        self.summary_page = SummaryPage(self)
 
-    def switch_to_summary(self, applicant_data: dict):
-        """
-        Berpindah ke halaman ringkasan CV dengan menampilkan data pelamar yang diberikan.
+        self.stacked_widget.addWidget(self.search_page)
+        self.stacked_widget.addWidget(self.summary_page)
 
-        Parameters:
-        - applicant_data (dict): Data lengkap hasil ekstraksi CV yang dipilih.
-        """
-        pass
+        self.show_search_page()
 
-    def run(self):
-        """
-        Menjalankan main loop GUI.
-        """
-        pass
+    def show_search_page(self):
+        self.stacked_widget.setCurrentWidget(self.search_page)
+
+    def show_summary_page(self, data=None):
+        if data:
+            self.summary_page.load_data(data)
+        self.stacked_widget.setCurrentWidget(self.summary_page)
