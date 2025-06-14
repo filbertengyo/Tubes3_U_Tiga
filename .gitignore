@@ -1,0 +1,13 @@
+# --- Virtual Environment ---
+.venv/
+venv/
+ENV/
+
+# --- Python Cache Files ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- IDE and Editor-Specific Files ---
+.vscode/
