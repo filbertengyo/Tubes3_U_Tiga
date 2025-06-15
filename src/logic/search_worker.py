@@ -44,10 +44,14 @@ class SearchWorker(QObject):
             if self.is_cancelled: return
             applicant_id, first_name, last_name, dob, address, phone, cv_path, _, detail_id = cv_tuple
             
-            if not cv_path or not os.path.exists(cv_path) or cv_path in processed_cv_paths:
+            if not cv_path or not os.path.exists(cv_path):
                 print(cv_path)
                 print("GA ADA ANJAY")
                 continue
+
+            if cv_path in processed_cv_paths:
+                print(cv_path)
+                print("Udah di cek anjay")
             
             raw_text = PDFParser(cv_path).extract_text()
             if not raw_text: continue
