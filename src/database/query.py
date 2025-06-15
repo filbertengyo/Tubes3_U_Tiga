@@ -7,9 +7,9 @@ def insert_applicant(profile: ApplicantProfile) -> int:
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO ApplicantProfile (name, email, phone, address)
-        VALUES (%s, %s, %s, %s)
-    """, (profile.name, profile.email, profile.phone, profile.address))
+        INSERT INTO ApplicantProfile (first_name, last_name, date_of_birth, address, phone_number)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (profile.first_name, profile.last_name, profile.date_of_birth, profile.address, profile.phone_number))
 
     conn.commit()
     inserted_id = cursor.lastrowid
@@ -23,9 +23,9 @@ def insert_application(detail: ApplicationDetail) -> int:
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO ApplicationDetail (applicant_id, cv_path, applied_position)
+        INSERT INTO ApplicationDetail (applicant_id, application_role, cv_path)
         VALUES (%s, %s, %s)
-    """, (detail.applicant_id, detail.cv_path, detail.applied_position))
+    """, (detail.applicant_id, detail.application_role, detail.cv_path))
 
     conn.commit()
     inserted_id = cursor.lastrowid
@@ -38,9 +38,9 @@ def get_all_applications() -> list[tuple]:
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT ap.id, ap.name, ap.email, ap.phone, ap.address, ad.cv_path, ad.applied_position
+        SELECT ap.applicant_id, ap.first_name, ap.last_name, ap.date_of_birth, ap.address, ap.phone_number, ad.cv_path, ad.application_role
         FROM ApplicantProfile ap
-        JOIN ApplicationDetail ad ON ap.id = ad.applicant_id
+        JOIN ApplicationDetail ad ON ap.applicant_id = ad.applicant_id
     """)
     results = cursor.fetchall()
     cursor.close()
