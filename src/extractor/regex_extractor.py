@@ -5,7 +5,8 @@ class RegexExtractor:
     def __init__(self, raw_text: str):
         self.text = raw_text
     
-    def extract_all(text: str) -> str:
+    def extract_all(self) -> str:
+        text = self.text
         all_info = {}
     
         text = re.sub(r'\s{2,}', ' ', text)
@@ -188,7 +189,7 @@ class RegexExtractor:
 
         # Format summary untuk CV
         result = "=" * 30 + "\n"
-        result += f"                        CV Summary (REGEX) \n"
+        result += f"                        CV Summary\n"
         result += "=" * 30 + "\n\n"
         
         if 'Job_Title' in all_info:
@@ -234,4 +235,5 @@ class RegexExtractor:
             
             result += f"  Full Info: {edu['Full_Text']}\n\n"
         
+        print(result)
         return result
