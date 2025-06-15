@@ -38,7 +38,7 @@ def get_all_applications() -> list[tuple]:
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT ap.applicant_id, ap.first_name, ap.last_name, ap.date_of_birth, ap.address, ap.phone_number, ad.cv_path, ad.application_role
+        SELECT ap.applicant_id, ap.first_name, ap.last_name, ap.date_of_birth, ap.address, ap.phone_number, ad.cv_path, ad.application_role, ad.detail_id
         FROM ApplicantProfile ap
         JOIN ApplicationDetail ad ON ap.applicant_id = ad.applicant_id
     """)

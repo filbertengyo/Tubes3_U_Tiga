@@ -235,5 +235,5 @@ class RegexExtractor:
             
             result += f"  Full Info: {edu['Full_Text']}\n\n"
         
-        print(result)
+        # print(result)
         return result
