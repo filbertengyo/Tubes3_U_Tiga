@@ -1,16 +1,18 @@
 from dataclasses import dataclass
+from typing import Optional
 
 @dataclass
 class ApplicantProfile:
-    id: int = None
-    name: str = ""
-    email: str = ""
-    phone: str = ""
+    applicant_id: Optional[int] = None
+    first_name: str = ""
+    last_name: str = ""
+    date_of_birth: Optional[str] = None  
     address: str = ""
+    phone_number: str = ""
 
 @dataclass
 class ApplicationDetail:
-    id: int = None
+    detail_id: Optional[int] = None
     applicant_id: int = None
+    application_role: str = ""
     cv_path: str = ""
-    applied_position: str = ""
