@@ -1,12 +1,14 @@
-import mysql.connector
+import pymysql
 
 def get_connection():
-    """Mengembalikan koneksi ke database MySQL."""
-    return mysql.connector.connect(
+    """Mengembalikan koneksi ke database MySQL menggunakan PyMySQL."""
+    return pymysql.connect(
         host="localhost",
         user="root",
         password="",
-        database="ats_db"
+        database="ats_db",
+        cursorclass=pymysql.cursors.Cursor,
+        autocommit=False
     )
 
 def init_db():

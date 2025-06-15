@@ -11,11 +11,11 @@ def insert_applicant(profile: ApplicantProfile) -> int:
         VALUES (%s, %s, %s, %s, %s)
     """, (profile.first_name, profile.last_name, profile.date_of_birth, profile.address, profile.phone_number))
 
+    applicant_id = cursor.lastrowid
     conn.commit()
-    inserted_id = cursor.lastrowid
     cursor.close()
     conn.close()
-    return inserted_id
+    return applicant_id
 
 def insert_application(detail: ApplicationDetail) -> int:
     """Menyimpan detail lamaran dan path CV."""
@@ -27,11 +27,11 @@ def insert_application(detail: ApplicationDetail) -> int:
         VALUES (%s, %s, %s)
     """, (detail.applicant_id, detail.application_role, detail.cv_path))
 
+    detail_id = cursor.lastrowid
     conn.commit()
-    inserted_id = cursor.lastrowid
     cursor.close()
     conn.close()
-    return inserted_id
+    return detail_id
 
 def get_all_applications() -> list[tuple]:
     """Mengambil semua aplikasi dan CV path-nya."""
