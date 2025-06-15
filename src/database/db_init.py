@@ -16,21 +16,22 @@ def init_db():
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS ApplicantProfile (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255),
-        email VARCHAR(255),
-        phone VARCHAR(50),
-        address TEXT
+        applicant_id INT AUTO_INCREMENT PRIMARY KEY,
+        first_name VARCHAR(50) DEFAULT NULL,
+        last_name VARCHAR(50) DEFAULT NULL,
+        date_of_birth DATE DEFAULT NULL,
+        address VARCHAR(255) DEFAULT NULL,
+        phone_number VARCHAR(20) DEFAULT NULL
     );
     """)
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS ApplicationDetail (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        applicant_id INT,
+        detail_id INT AUTO_INCREMENT PRIMARY KEY,
+        applicant_id INT NOT NULL,
+        application_role VARCHAR(100) DEFAULT NULL,
         cv_path TEXT,
-        applied_position VARCHAR(255),
-        FOREIGN KEY (applicant_id) REFERENCES ApplicantProfile(id)
+        FOREIGN KEY (applicant_id) REFERENCES ApplicantProfile(applicant_id)
     );
     """)
 

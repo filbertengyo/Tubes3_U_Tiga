@@ -1,5 +1,5 @@
-from .pdf_parser import PDFParser
-from .regex_extractor import RegexExtractor
+from pdf_parser import PDFParser
+from regex_extractor import RegexExtractor
 from typing import Dict
 
 class CVProcessor:
