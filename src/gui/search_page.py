@@ -4,13 +4,11 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdi
                              QPushButton, QRadioButton, QComboBox, QGroupBox, 
                              QMessageBox, QScrollArea, QSpinBox)
 from PyQt6.QtGui import QFont, QDesktopServices
-from PyQt6.QtCore import QUrl, Qt
+from PyQt6.QtCore import QUrl, Qt, QThread
 import os
-import random
 
 from .result_card import ResultCard 
-
-# from src.logic.search_handler import perform_search 
+from src.logic.search_worker import SearchWorker
 
 class SearchPage(QWidget):
     def __init__(self, controller):
@@ -21,6 +19,8 @@ class SearchPage(QWidget):
         self.all_results = []
         self.current_page = 1
         self.results_per_page = 10
+        self.search_thread = None
+        self.search_worker = None
         
         self.init_ui()
 
@@ -50,9 +50,11 @@ class SearchPage(QWidget):
         options_layout.addWidget(QLabel("Algorithm:"))
         self.kmp_radio = QRadioButton("KMP")
         self.bm_radio = QRadioButton("BM")
-        self.kmp_radio.setChecked(True)
+        self.aho_radio = QRadioButton("Aho-Corasick")
+        self.aho_radio.setChecked(True)
         options_layout.addWidget(self.kmp_radio)
         options_layout.addWidget(self.bm_radio)
+        options_layout.addWidget(self.aho_radio)
         
         dropdown_layout = QHBoxLayout()
         
@@ -76,10 +78,17 @@ class SearchPage(QWidget):
         input_layout.addLayout(options_layout)
         main_layout.addWidget(input_group)
         
-        # Search Button
+        # Search and Cancel Buttons
+        search_button_layout = QHBoxLayout()
         self.search_button = QPushButton("Search")
         self.search_button.clicked.connect(self.on_search_clicked)
-        main_layout.addWidget(self.search_button)
+        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.clicked.connect(self.on_cancel_clicked)
+        self.cancel_button.setEnabled(False)
+        search_button_layout.addWidget(self.search_button)
+        search_button_layout.addWidget(self.cancel_button)
+        main_layout.addLayout(search_button_layout)
+
 
         # Results GroupBox
         results_group = QGroupBox()
@@ -121,39 +130,72 @@ class SearchPage(QWidget):
         
         results_group_layout.addLayout(pagination_layout)
 
-
     def on_search_clicked(self):
         keywords = [k.strip() for k in self.keywords_entry.text().split(',') if k.strip()]
         if not keywords:
             QMessageBox.warning(self, "Input Error", "Please enter at least one keyword.")
             return
         
+        if self.kmp_radio.isChecked():
+            algorithm = "KMP"
+        elif self.bm_radio.isChecked():
+            algorithm = "BM"
+        else:
+            algorithm = "AhoCorasick"
+            
         top_n = self.top_n_spinbox.value()
         self.results_per_page = int(self.results_per_page_combo.currentText())
 
-        # DUMMY DATA GENERATION
-        self.all_results = []
-        num_dummy_results = top_n 
-        first_names = ["Farhan", "Ariel", "Aland", "Ciko", "Haikal", "Rafi", "Eka", "Ikhwan"]
-        for i in range(num_dummy_results):
-            num_matched = random.randint(1, len(keywords))
-            matched_kws = random.sample(keywords, k=num_matched)
-            dummy_result = {
-                'applicant_id': 100 + i,
-                'name': f"{random.choice(first_names)} - Applicant #{i+1}",
-                'cv_path': f"C:/path/to/dummy_cv_{i}.pdf",
-                'match_count': len(matched_kws),
-                'matched_keywords': {kw: random.randint(1, 3) for kw in matched_kws},
-                'first_name': 'Dummy', 'last_name': f'User {i+1}',
-                'email': f'dummy{i+1}@test.com', 'phone': '08123456789',
-                'full_profile_text': f'This is the full text for applicant {i+1}. Skills include {", ".join(matched_kws)}.'
-            }
-            self.all_results.append(dummy_result)
+        self.search_button.setEnabled(False)
+        self.cancel_button.setEnabled(True)
+        self.summary_label.setText("Searching... Please wait.")
         
-        self.summary_label.setText(f"Found {len(self.all_results)} total results.")
+        self.search_thread = QThread()
+        self.search_worker = SearchWorker(keywords, algorithm, top_n)
+        self.search_worker.moveToThread(self.search_thread)
+        
+        self.search_thread.started.connect(self.search_worker.run)
+        self.search_worker.search_finished.connect(self.on_search_finished)
+        self.search_worker.search_error.connect(self.on_search_error)
+        
+        self.search_thread.start()
+
+    def on_cancel_clicked(self):
+        if self.search_worker:
+            self.search_worker.cancel()
+        if self.search_thread:
+            self.search_thread.quit()
+            self.search_thread.wait()
+        self.summary_label.setText("Search cancelled.")
+        self.search_button.setEnabled(True)
+        self.cancel_button.setEnabled(False)
+
+    def on_search_finished(self, results, exact_time, fuzzy_time):
+        self.all_results = results
+        time_text = f"Exact Match ({self.search_worker.algorithm}): {exact_time:.2f} ms"
+        if fuzzy_time > 0:
+            time_text += f" | Fuzzy Match: {fuzzy_time:.2f} ms"
+        self.summary_label.setText(f"Found {len(self.all_results)} total results. {time_text}")
+        
+        self.search_button.setEnabled(True)
+        self.cancel_button.setEnabled(False)
         self.current_page = 1
         self.update_page_display()
+        
+        self.search_thread.quit()
+        self.search_thread.wait()
 
+    def on_search_error(self, error_message):
+        QMessageBox.critical(self, "Search Error", f"An unexpected error occurred: {error_message}")
+        self.all_results = []
+        self.search_button.setEnabled(True)
+        self.cancel_button.setEnabled(False)
+        self.summary_label.setText("Search failed.")
+        
+        self.search_thread.quit()
+        self.search_thread.wait()
+        
+        self.update_page_display()
 
     def update_page_display(self):
         self.clear_layout(self.card_layout)
@@ -183,12 +225,10 @@ class SearchPage(QWidget):
         self.prev_button.setEnabled(self.current_page > 1)
         self.next_button.setEnabled(self.current_page < total_pages)
 
-
     def go_to_prev_page(self):
         if self.current_page > 1:
             self.current_page -= 1
             self.update_page_display()
-
 
     def go_to_next_page(self):
         total_pages = math.ceil(len(self.all_results) / self.results_per_page)
@@ -196,17 +236,14 @@ class SearchPage(QWidget):
             self.current_page += 1
             self.update_page_display()
 
-
     def clear_layout(self, layout):
         while layout.count() > 1:
             child = layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
 
-
     def handle_summary_request(self, data: dict):
         self.controller.show_summary_page(data)
-
 
     def handle_view_cv_request(self, cv_path: str):
         if cv_path and os.path.exists(cv_path):
