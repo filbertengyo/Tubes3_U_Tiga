@@ -99,7 +99,7 @@ class SummaryPage(QWidget):
         self.details_layout.addWidget(identity_frame)
 
         # --- Extracted Info Section ---
-        summary = data.get('summary', {})
+        summary = data.get('raw_text', {})
 
         summary_group, summary_layout = self._create_section_group("Summary")
 
